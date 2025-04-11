@@ -31,16 +31,30 @@ led_strip_handle_t configure_led(void)
 void app_main(void)
 {
     led_strip_handle_t led_strip = configure_led();
-    uint8_t red = 0;
-    uint8_t green = 0;
-    uint8_t blue = 50;
+    uint8_t red = 255;
+    uint8_t green = 11;
+    uint8_t blue = 200;
+    int brightness = 0;
+    int step = 5; // 每次調整的亮度增量
 
     while (1)
     {
-        led_strip_set_pixel(led_strip, 0, red, green, blue);
+        // 計算當前亮度下的 RGB 值
+        uint8_t scaled_red = (red * brightness) / 255;
+        uint8_t scaled_green = (green * brightness) / 255;
+        uint8_t scaled_blue = (blue * brightness) / 255;
+
+        // 設定 LED 顏色
+        led_strip_set_pixel(led_strip, 0, scaled_red, scaled_green, scaled_blue);
         led_strip_refresh(led_strip);
-        vTaskDelay(1000 / portTICK_PERIOD_MS);
-        led_strip_clear(led_strip);
-        vTaskDelay(1000 / portTICK_PERIOD_MS);
+
+        // 調整亮度
+        brightness += step;
+        if (brightness >= 255 || brightness <= 0)
+        {
+            step = -step; // 反向調整亮度，實現漸亮漸暗
+        }
+
+        vTaskDelay(30 / portTICK_PERIOD_MS); // 控制呼吸燈速度
     }
 }
